@@ -125,6 +125,8 @@ const el = {
   drawerBackdrop: document.getElementById("drawerBackdrop")
 };
 
+import { initDatePicker } from './datepicker.js';
+
 init();
 
 async function init() {
@@ -177,6 +179,38 @@ function bindEvents() {
   el.btnToday?.addEventListener("click", () => setQuickDate("today"));
   el.btnLast7?.addEventListener("click", () => setQuickDate("last7"));
   el.btnThisMonth?.addEventListener("click", () => setQuickDate("thisMonth"));
+
+  // If using the custom datepicker, avoid triggering the native picker
+  const USE_CUSTOM_DATEPICKER = true;
+
+  // Ensure tapping the date input or its icon opens the native picker on supported browsers
+  const ensureDateOpener = (input) => {
+    if (!input) return;
+    if (USE_CUSTOM_DATEPICKER) return; // custom picker will handle events
+    const openPicker = (evt) => {
+      try {
+        if (typeof input.showPicker === "function") {
+          input.showPicker();
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+      input.focus();
+    };
+
+    input.addEventListener("click", openPicker);
+    input.addEventListener("touchend", openPicker);
+  };
+
+  ensureDateOpener(el.dateFrom);
+  ensureDateOpener(el.dateTo);
+
+  try {
+    initDatePicker(el.dateFrom, el.dateTo);
+  } catch (e) {
+    console.warn('Datepicker module init failed:', e);
+  }
 
   // Drawer sidebar handlers (small screens)
   el.drawerToggleBtn?.addEventListener("click", (e) => {
