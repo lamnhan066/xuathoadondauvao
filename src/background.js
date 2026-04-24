@@ -118,33 +118,7 @@ chrome.action.onClicked.addListener(() => {
   });
 });
 
-/*
- Background <-> Content message contract (short reference):
 
- - Content script performs a single HTTP probe to the portal endpoint
-   `/tra-cuu/tra-cuu-hoa-don` (fetch with `credentials: 'include'`) to detect
-   whether the current page session is authenticated.
-
- - After the probe, the content script sends a message to the background with
-   `type: 'PORTAL_FLOW'` (or `AUTH_HINT`) and a `payload` object. Expected
-   payload shape (subset):
-     {
-       phase: string,            // e.g. 'authenticated-shell' or 'invoice-search'
-       isLoggedInUi: boolean,    // true when probe returned 2xx
-       evidence: [               // array of short evidence objects
-         { type: 'fetch', url: string, status?: number, error?: string }
-       ],
-       title: string,
-       url: string,
-       updatedAt: ISODateString
-     }
-
- - The background stores this normalized portal flow as `portalFlow` and may
-   use it alongside server-side probe results to determine auth state.
-
- NOTE: Do not rely on DOM/UI class names (e.g. Ant modal classes) for auth
- detection — the content script no longer emits UI-selector based signals.
-*/
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   try {
     if (!message || !message.type) {
