@@ -611,9 +611,7 @@ async function exportSelected() {
     return;
   }
 
-  const exportReviewEntries = state.productCatalog.products.length
-    ? collectExportReviewNeeds(flatDetailInvoices, state.productCatalog)
-    : [];
+  const exportReviewEntries = collectExportReviewNeeds(flatDetailInvoices, state.productCatalog);
   let exportReview = null;
 
   if (exportReviewEntries.length > 0) {
@@ -1902,9 +1900,12 @@ function renderExportReviewDialog() {
   el.exportReviewList.innerHTML = entries
     .map((entry, index) => {
       const rowNumber = entry.lineIndex >= 0 ? entry.lineIndex + 1 : 1;
-      const reason = entry.resolvedCode
-        ? "Mã SP trong mẫu còn trống"
-        : "Không tìm thấy mã SP trong mẫu";
+      let reason;
+      if (!state.productCatalog || !Array.isArray(state.productCatalog.products) || state.productCatalog.products.length === 0) {
+        reason = "Chưa tải danh sách Sản phẩm mẫu";
+      } else {
+        reason = entry.resolvedCode ? "Mã sản phẩm trong mẫu trống" : "Không thấy Mã sản phẩm trong mẫu";
+      }
       const row = entry.row || {};
 
       return `
