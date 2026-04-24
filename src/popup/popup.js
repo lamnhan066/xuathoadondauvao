@@ -592,14 +592,11 @@ async function exportSelected() {
   const productAudit = collectProductResolutionNeeds(flatDetailInvoices, state.productCatalog);
 
   if (!state.productCatalog.products.length) {
-    setExportBusy(false);
     setStatus(
       el.fetchStatus,
-      "Vui lòng tải mẫu BC_San_Pham trước khi xuất để map mã sản phẩm.",
-      true
+      "Chưa tải mẫu BC_San_Pham từ Tendoo. Tiện ích sẽ xuất bằng mã tự sinh nếu cần (khuyến nghị: tải mẫu để tự động xuất mã sản phẩm chính xác)."
     );
     renderProductCatalogStatus(productAudit);
-    return;
   }
 
   renderProductCatalogStatus(productAudit);
@@ -614,10 +611,9 @@ async function exportSelected() {
     return;
   }
 
-  const exportReviewEntries = collectExportReviewNeeds(
-    flatDetailInvoices,
-    state.productCatalog
-  );
+  const exportReviewEntries = state.productCatalog.products.length
+    ? collectExportReviewNeeds(flatDetailInvoices, state.productCatalog)
+    : [];
   let exportReview = null;
 
   if (exportReviewEntries.length > 0) {
