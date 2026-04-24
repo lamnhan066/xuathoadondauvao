@@ -1,0 +1,135 @@
+name: Release Extension (minify)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          npm ci
+
+      - name: Read version and validate tag
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version=$(node -p "require('./manifest.json').version")
+          tag_name="${GITHUB_REF_NAME}"
+          expected_tag="v${version}"
+
+          if [[ "$tag_name" != "$expected_tag" ]]; then
+            echo "Tag '$tag_name' does not match manifest version '$expected_tag'."
+            exit 1
+          fi
+
+          archive_root="hoadon-extension-${tag_name}"
+          archive_name="${archive_root}.zip"
+          staging_dir="release-package/${archive_root}"
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag_name=${tag_name}" >> "$GITHUB_OUTPUT"
+          echo "archive_root=${archive_root}" >> "$GITHUB_OUTPUT"
+          echo "archive_name=${archive_name}" >> "$GITHUB_OUTPUT"
+          echo "staging_dir=${staging_dir}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate vendored libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required_vendor_files=(
+            "src/vendor/xlsx.full.min.js"
+          )
+
+          for file in "${required_vendor_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "Error: Required vendor file '$file' not found"
+              exit 1
+            fi
+          done
+          echo "All vendor files present"
+
+      - name: Prepare release package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          staging_dir="${{ steps.meta.outputs.staging_dir }}"
+          mkdir -p "$staging_dir"
+
+          cp manifest.json README.md package.json package-lock.json "$staging_dir/"
+          cp -R assets src "$staging_dir/"
+
+      - name: Minify JS in staging
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          staging_dir="${{ steps.meta.outputs.staging_dir }}"
+          temp_dir="$(mktemp -d)"
+
+          cleanup() {
+            rm -rf "$temp_dir"
+          }
+          trap cleanup EXIT
+
+          echo "Finding JS files in $staging_dir (excluding vendor and *.min.js)..."
+          find "$staging_dir" -type f -name "*.js" ! -path "*/vendor/*" ! -name "*.min.js" -print0 | while IFS= read -r -d '' f; do
+            echo "Minifying: $f"
+
+            temp_file="$temp_dir/$(basename "${f%.js}").js"
+
+            # Minify to temporary file, then overwrite original
+            npx terser "$f" -c -m -o "$temp_file"
+            mv "$temp_file" "$f"
+
+          done
+
+      - name: Create zip archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd release-package
+          zip -r "../${{ steps.meta.outputs.archive_name }}" "${{ steps.meta.outputs.archive_root }}" >/dev/null
+
+      - name: Verify archive contents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          forbidden='(^|/)(\.git|\.github|\.gitignore)(/|$)'
+          contents=$(zipinfo -1 "${{ steps.meta.outputs.archive_name }}")
+
+          if echo "$contents" | grep -Eq "$forbidden"; then
+            echo "Release archive contains forbidden files or directories:"
+            echo "$contents" | grep -En "$forbidden" || true
+            exit 1
+          fi
+
+          echo "Archive contents look clean:"
+          echo "$contents"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag_name }}
+          name: Xuất Hóa Đơn Đầu Vào ${{ steps.meta.outputs.tag_name }}
+          files: ${{ steps.meta.outputs.archive_name }}
+          generate_release_notes: true

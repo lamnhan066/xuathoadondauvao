@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "Xuất Hóa Đơn Đầu Vào",
+  "description": "Lấy hóa đơn mua vào từ hoadondientu.gdt.gov.vn và xuất theo mẫu nhập Tendoo.",
+  "version": "0.1.0",
+  "permissions": [
+    "storage",
+    "downloads",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://hoadondientu.gdt.gov.vn/*",
+    "https://hoadondientu.gdt.gov.vn:30000/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Xuất Hóa Đơn Đầu Vào",
+    "default_icon": {
+      "16": "assets/icon16.png",
+      "48": "assets/icon48.png",
+      "128": "assets/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icon16.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://hoadondientu.gdt.gov.vn/*"
+      ],
+      "js": [
+        "src/content/content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+## Node modules
+node_modules/
+
+## Dependency caches
+.pnp/
+.pnp.js
+
+## Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## IDE/editor
+.vscode/
+.idea/
+.history/
+
+## Build output
+/dist/
+/build/
+
+## Temporary
+.cache/
+tmp/
+temp/
+
+## Environment
+.env
+.env.*.local
+
+## Chrome extension packaging
+*.crx
+*.pem
+
+## Test / coverage
+/coverage/
+junit-report.xml
+
+## Database
+*.sqlite
+*.sqlite3
+
+## Local node installs
+/node_modules/
+
+## Misc
+*.log

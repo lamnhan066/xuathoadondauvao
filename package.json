@@ -1,0 +1,16 @@
+{
+  "name": "xuat-hoa-don-dau-vao",
+  "version": "0.1.0",
+  "description": "Tiện ích Chrome xuất hóa đơn mua vào từ hoadondientu.gdt.gov.vn sang mẫu Tendoo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPL-3.0-or-later",
+  "type": "commonjs",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

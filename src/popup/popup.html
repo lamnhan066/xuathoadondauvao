@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xuất Hóa Đơn Đầu Vào</title>
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img class="brand-logo" src="../../assets/icon.png" width="32" height="32" alt="Xuất Hóa Đơn Đầu Vào" />
+      <div class="brand-text">
+        <h1>Xuất Hóa Đơn Đầu Vào</h1>
+      </div>
+    </div>
+    <!-- drawer toggle moved to corner for small screens -->
+    <div class="header-actions">
+      <span id="versionLabel" class="version-label" aria-hidden="true"></span>
+      <button id="supportBtn" class="btn primary sm" title="Ủng hộ nhà phát triển">
+        <span class="icon">❤</span>
+        <span>Ủng hộ</span>
+      </button>
+      <button id="githubBtn" class="btn ghost sm" title="Mở GitHub">
+        <span class="icon github-icon" aria-hidden="true">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true">
+            <path fill-rule="evenodd"
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.292 6.534 5.47 7.593.4.074.546-.174.546-.386 0-.19-.007-.693-.01-1.36-2.225.483-2.695-1.073-2.695-1.073-.364-.924-.89-1.17-.89-1.17-.727-.497.055-.487.055-.487.803.056 1.226.825 1.226.825.714 1.223 1.873.87 2.33.665.072-.517.28-.87.508-1.07-1.777-.202-3.644-.888-3.644-3.953 0-.873.312-1.586.824-2.146-.083-.203-.357-1.02.078-2.127 0 0 .672-.215 2.2.82.64-.178 1.32-.267 2-.27.68.003 1.36.092 2 .27 1.527-1.035 2.198-.82 2.198-.82.437 1.107.163 1.924.08 2.127.513.56.823 1.273.823 2.146 0 3.072-1.87 3.748-3.65 3.948.288.25.544.738.544 1.488 0 1.074-.01 1.941-.01 2.204 0 .214.144.463.55.384C13.709 14.533 16 11.54 16 8c0-4.42-3.58-8-8-8z" />
+          </svg>
+        </span>
+        <span>GitHub</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <aside class="sidebar">
+      <section class="card sidebar-section sidebar-top">
+        <div class="sidebar-info">
+          <h3>Thông tin</h3>
+
+          <div class="sidebar-info-lines">
+            <div id="authStatus" class="info-line">Đang kiểm tra session...</div>
+            <div id="portalFlowStatus" class="info-line muted">Chờ thông tin cổng...</div>
+          </div>
+
+          <div class="sidebar-info-actions">
+            <button id="checkAuthBtn" class="btn secondary sm" title="Làm mới trạng thái">Làm mới</button>
+            <button id="openPortalBtn" class="btn ghost sm" title="Mở cổng Hóa đơn điện tử">Mở trang Hóa đơn điện
+              tử</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card sidebar-section">
+        <div class="section-header">
+          <h3>Mẫu sản phẩm</h3>
+          <button id="clearProductTemplateBtn" class="btn ghost icon-btn" title="Xóa mẫu">✕</button>
+        </div>
+        <p class="muted-note">Dùng để tra mã sản phẩm theo tên.</p>
+        <button id="productTemplateBtn" class="btn secondary w100">Chọn file BC_San_Pham</button>
+        <input type="file" id="productTemplateInput" accept=".xlsx,.xls,.xlsm" hidden />
+        <p id="productTemplateStatus" class="status-note"></p>
+        <div id="productResolutionList" class="product-resolution-mini"></div>
+      </section>
+    </aside>
+
+    <div class="main-content">
+
+      <section class="card filter-pane">
+        <h3>Bộ lọc</h3>
+        <div class="date-quick-actions">
+          <button id="btnToday" class="btn chip">Hôm nay</button>
+          <button id="btnLast7" class="btn chip">7 ngày qua</button>
+          <button id="btnThisMonth" class="btn chip">Tháng này</button>
+        </div>
+        <div class="date-inputs">
+          <label>
+            Từ ngày
+            <input type="date" id="dateFrom" />
+          </label>
+          <label>
+            Đến ngày
+            <input type="date" id="dateTo" />
+          </label>
+        </div>
+
+        <details class="advanced-filters">
+          <summary>Nâng cao (Trạng thái xử lý)</summary>
+          <div class="grid2" style="margin-top: 10px;">
+            <label>
+              HĐ điện tử
+              <input type="number" id="queryStatus" value="5" title="Mặc định là 5 (Đã cấp mã/Đã xử lý)" />
+            </label>
+            <label>
+              HĐ máy tính tiền
+              <input type="number" id="scoStatus" value="8" title="Mặc định là 8 (Đã xử lý)" />
+            </label>
+          </div>
+        </details>
+
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+          <button id="fetchBtn" class="btn primary">Tải hóa đơn</button>
+          <p id="fetchStatus" class="status-note" style="margin:0 0 0 8px;flex:1"></p>
+        </div>
+      </section>
+
+      <section class="card master-pane">
+        <div class="pane-header">
+          <div class="title-group">
+            <h2>Danh sách hóa đơn</h2>
+            <span id="invoiceListBadge" class="badge" hidden></span>
+          </div>
+          <button id="exportBtn" class="btn primary">
+            <span class="btn-spinner"></span>
+            <span class="label">Xuất Tendoo</span>
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" id="checkAll" /></th>
+                <th class="col-source">Nguồn</th>
+                <th class="col-no">Số HD</th>
+                <th class="col-seller">Người bán</th>
+                <th class="col-date">Ngày lập</th>
+                <th class="col-amount">Tổng tiền</th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody id="invoiceRows">
+              <tr>
+                <td colspan="7" class="empty-state">Chưa có dữ liệu. Hãy nhập ngày và bấm "Tải hóa đơn".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card detail-pane">
+        <div class="pane-header">
+          <div class="title-group">
+            <h2>Chi tiết hóa đơn</h2>
+            <span id="invoiceSourceBadge" class="badge" hidden></span>
+          </div>
+        </div>
+        <div id="invoiceDetail" class="detail-content">
+          <div class="empty-detail">
+            <span class="icon">📄</span>
+            <p>Chọn một hóa đơn để xem chi tiết</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="drawerBackdrop" class="drawer-backdrop" hidden></div>
+
+  <button id="drawerToggleBtn" class="drawer-toggle" aria-label="Bộ lọc" title="Bộ lọc">→</button>
+
+  <dialog id="exportReviewDialog" class="modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <div>
+          <h2>Rà soát mã sản phẩm</h2>
+          <p class="muted-note">Một số dòng chưa có mã sản phẩm, vui lòng kiểm tra hoặc sửa mã.</p>
+        </div>
+        <button id="exportReviewCancelBtn" class="btn ghost icon-btn">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <p id="exportReviewSummary" class="summary-text"></p>
+        <p id="exportReviewStatus" class="status-text"></p>
+        <div class="table-container modal-table">
+          <table class="review-table">
+            <thead>
+              <tr>
+                <th><input id="exportReviewSelectAll" type="checkbox" checked /></th>
+                <th>Hóa đơn</th>
+                <th>Mã sản phẩm</th>
+                <th>Tên hàng hóa, dịch vụ</th>
+                <th>Đơn vị tính</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Chiết khấu</th>
+                <th>Thuế suất</th>
+              </tr>
+            </thead>
+            <tbody id="exportReviewList"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button id="exportReviewConfirmBtn" class="btn primary">Xác nhận và xuất</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <dialog id="supportDialog" class="modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <div>
+          <h2>Ủng hộ nhà phát triển</h2>
+          <p class="muted-note">Cảm ơn bạn đã ủng hộ! Vui lòng chọn phương thức bên dưới.</p>
+        </div>
+        <button id="supportCloseBtn" class="btn ghost icon-btn">✕</button>
+      </header>
+
+      <div class="modal-body">
+        <p id="supportStatus" class="status-note"></p>
+
+        <div class="support-row">
+          <h4>Momo</h4>
+          <div class="qr-wrap">
+            <img id="momoQr" src="../../assets/momo_qr.png" alt="Momo QR" class="qr-image"
+              onerror="this.style.opacity=0.6;" />
+          </div>
+        </div>
+
+        <div class="support-row">
+          <h4>PayPal</h4>
+          <p class="muted-note">Mở PayPal để ủng hộ qua trang an toàn.</p>
+          <button id="paypalOpenBtn" class="btn primary">Mở PayPal</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="../vendor/xlsx.full.min.js"></script>
+  <script type="module" src="./popup.js"></script>
+</body>
+
+</html>
