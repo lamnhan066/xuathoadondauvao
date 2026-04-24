@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Xuất Hóa Đơn Đầu Vào",
   "description": "Lấy hóa đơn mua vào từ hoadondientu.gdt.gov.vn và xuất theo mẫu nhập Tendoo.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "permissions": [
     "storage",
     "downloads",
