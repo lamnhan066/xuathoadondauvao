@@ -8,33 +8,30 @@ if (window.__HOADON_CONTENT_INJECTED) {
 
   // Use a single fetch probe to determine authentication state.
   async function buildPortalFlow() {
+    const storageSnapshot = collectStorageSnapshot();
+    const authorization =
+      findBearerValue(storageSnapshot) ||
+      buildBearerFromValue(storageSnapshot.jwt) ||
+      buildBearerFromValue(storageSnapshot.token) ||
+      buildBearerFromValue(storageSnapshot.accessToken) ||
+      buildBearerFromValue(findJwtCookieValue());
+
     const payload = {
-      phase: "unknown",
+      phase: authorization ? "authenticated-shell" : "unknown",
       hasLoginModal: false,
       hasInvoiceSearch: false,
       hasLoggedInActionButton: false,
-      isLoggedInUi: false,
+      isLoggedInUi: Boolean(authorization),
       title: document.title || "",
       url: window.location.href,
       evidence: [],
       updatedAt: new Date().toISOString()
     };
 
-    // Single fetch check to the portal endpoint to verify session/auth.
-    const endpoint = "/tra-cuu/tra-cuu-hoa-don";
-    const controller = new AbortController();
-    const timeout = 1500;
-    const timer = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const res = await fetch(endpoint, { method: "GET", credentials: "include", signal: controller.signal, headers: { "Accept-Language": "vi" } });
-      clearTimeout(timer);
-      payload.isLoggedInUi = res.status >= 200 && res.status < 400;
-      payload.evidence.push({ type: "fetch", url: endpoint, status: res.status });
-    } catch (e) {
-      clearTimeout(timer);
-      payload.isLoggedInUi = false;
-      payload.evidence.push({ type: "fetch", url: endpoint, error: String(e) });
+    if (authorization) {
+      payload.evidence.push({ type: "auth", source: "storage-or-cookie" });
+    } else {
+      payload.evidence.push({ type: "auth", source: "missing-token" });
     }
 
     return payload;

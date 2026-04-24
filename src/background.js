@@ -1,5 +1,6 @@
 const PORTAL_BASE_URL = "https://hoadondientu.gdt.gov.vn";
 const QUERY_BASE = `${PORTAL_BASE_URL}:30000`;
+const PORTAL_SEARCH_URL = `${PORTAL_BASE_URL}/tra-cuu/tra-cuu-hoa-don`;
 const QUERY_PATH = "/query/invoices/purchase";
 const SCO_QUERY_PATH = "/sco-query/invoices/purchase";
 const DETAIL_PATHS = {
@@ -72,6 +73,11 @@ function userFriendlyServerError(err) {
 
   console.error("Server check error:", err);
   return `Không thể kiểm tra server. Vui lòng thử lại sau.`;
+}
+
+function isHostPermissionError(err) {
+  const raw = err?.message || String(err);
+  return /access contents of the page|request permission to access the respective host|must request permission to access/i.test(raw);
 }
 async function readPortalFlow() {
   const { portalFlow, authHint } = await chrome.storage.local.get(["portalFlow", "authHint"]);
@@ -244,11 +250,11 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 async function openLoginWindow() {
   try {
-    await chrome.tabs.create({ url: "https://hoadondientu.gdt.gov.vn/", active: true });
+    await chrome.tabs.create({ url: PORTAL_SEARCH_URL, active: true });
   } catch (e) {
     try {
       // fallback to windows.create if tabs.create fails for some reason
-      await chrome.windows.create({ url: "https://hoadondientu.gdt.gov.vn/", type: "popup", width: 1180, height: 900, focused: true });
+      await chrome.windows.create({ url: PORTAL_SEARCH_URL, type: "popup", width: 1180, height: 900, focused: true });
     } catch (err) {
       throw new Error(err?.message || e?.message || "Không thể mở cổng đăng nhập");
     }
@@ -299,6 +305,26 @@ async function resolveAuthState() {
 
     return buildAuthProbeResult(response, portalFlow, "server");
   } catch (err) {
+    if (isHostPermissionError(err)) {
+      try {
+        const requestHeaders = await buildPortalRequestHeaders("query", QUERY_PATH);
+        const response = await fetchViaPortalPage(url, {
+          headers: requestHeaders,
+          retries: 1,
+          timeout: 3000
+        });
+
+        return buildAuthProbeResult(response, portalFlow, "page");
+      } catch (pageErr) {
+        return {
+          isAuthenticated: false,
+          phase: portalFlow?.phase || "unknown",
+          portalFlow,
+          reason: userFriendlyServerError(pageErr)
+        };
+      }
+    }
+
     return {
       isAuthenticated: false,
       phase: portalFlow?.phase || "unknown",
@@ -1036,13 +1062,14 @@ async function sendPortalMessage(tabId, message) {
       if (chrome.runtime.lastError) {
         const lastErr = chrome.runtime.lastError;
         const errorMessage = lastErr && lastErr.message ? lastErr.message : String(lastErr || "");
-        console.warn("sendPortalMessage: chrome.runtime.lastError", { tabId, messageType: message?.type, errorMessage });
 
         // Return a structured error object instead of null so callers can distinguish cases
         if (isMissingReceiverError(errorMessage)) {
           resolve({ ok: false, error: "missing_receiver", details: errorMessage });
           return;
         }
+
+        console.warn("sendPortalMessage: chrome.runtime.lastError", { tabId, messageType: message?.type, errorMessage });
 
         resolve({ ok: false, error: "runtime_error", details: errorMessage });
         return;
