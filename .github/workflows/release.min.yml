@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
 
-          archive_root="hoadon-extension-${tag_name}"
+          archive_root="xuathoadondauvao-extension-${tag_name}"
           archive_name="${archive_root}.zip"
           staging_dir="release-package/${archive_root}"
 
