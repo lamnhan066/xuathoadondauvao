@@ -1,6 +1,6 @@
 {
   "name": "xuat-hoa-don-dau-vao",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Tiện ích Chrome xuất hóa đơn mua vào từ hoadondientu.gdt.gov.vn sang mẫu Tendoo.",
   "main": "index.js",
   "scripts": {
