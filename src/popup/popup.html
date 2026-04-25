@@ -18,7 +18,6 @@
     </div>
     <!-- drawer toggle moved to corner for small screens -->
     <div class="header-actions">
-      <span id="versionLabel" class="version-label" aria-hidden="true"></span>
       <button id="supportBtn" class="btn primary sm" title="Ủng hộ nhà phát triển">
         <span class="icon">❤</span>
         <span>Ủng hộ</span>
@@ -235,6 +234,24 @@
       </div>
     </div>
   </dialog>
+  <footer class="popup-footer">
+    <div class="footer-left">
+      <small class="muted-note">Phiên bản: <span id="versionLabel" class="version-label"
+          aria-hidden="true"></span></small>
+    </div>
+    <div class="footer-right">
+      <a id="docsBtnFooter" class="btn ghost sm" href="https://hoadon.lamnhan.dev/docs.html" target="_blank"
+        rel="noreferrer" title="Hướng dẫn" aria-label="Hướng dẫn">
+        <span class="icon">📘</span>
+        <span>Hướng dẫn</span>
+      </a>
+      <a id="privacyBtnFooter" class="btn ghost sm" href="https://hoadon.lamnhan.dev/privacy-policy.html"
+        target="_blank" rel="noreferrer" title="Quyền riêng tư" aria-label="Quyền riêng tư">
+        <span class="icon">🔒</span>
+        <span>Quyền riêng tư</span>
+      </a>
+    </div>
+  </footer>
 
   <script src="../vendor/xlsx.full.min.js"></script>
   <script type="module" src="./popup.js"></script>
