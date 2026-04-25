@@ -84,6 +84,30 @@ button {
   gap: 12px;
 }
 
+/* Ensure header action buttons share same height and vertical alignment */
+.header-actions .btn {
+  height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-actions .btn>.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-actions .btn.sm {
+  padding: 0 12px;
+}
+
+.header-actions .window-mode-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
 /* GitHub icon sizing inside header buttons */
 .header-actions .icon.github-icon svg {
   width: 16px;

@@ -524,16 +524,15 @@ async function ensurePortalBridgeInjected(tabId) {
                 Boolean(window.__EXT_PAGE_FETCH_INJECTED) &&
                 Array.isArray(window.__HOADON_LOGIN_MODAL_SELECTORS)
               );
-            } catch {
-              return false;
-            }
+            } catch (e) { console.error(e); return false; }
           }
         });
 
         if (Array.isArray(results) && results.some((r) => r?.result === true)) {
           return; // Bridge confirmed
         }
-      } catch {
+      } catch (e) {
+        console.error(e);
         // ignore, retry
       }
 
@@ -574,7 +573,8 @@ async function findPortalTab() {
       if (tab?.id && tab.url?.includes("hoadondientu.gdt.gov.vn")) {
         return tab;
       }
-    } catch {
+    } catch (e) {
+      console.error(e);
       // tab no longer exists, fall through
     }
   }
@@ -1135,7 +1135,8 @@ function parseInvoiceTimestamp(value) {
 function safeParseJson(text, source) {
   try {
     return JSON.parse(text);
-  } catch {
+  } catch (e) {
+    console.error('safeParseJson failed:', e);
     throw new Error(`Phản hồi ${source} không phải JSON hợp lệ`);
   }
 }
@@ -1192,6 +1193,24 @@ async function openExtensionTab() {
   }
 
   await chrome.tabs.create({ url: targetUrl, active: true });
+}
+
+async function openExtensionWindow(windowBounds = {}) {
+  const targetUrl = chrome.runtime.getURL("src/popup/popup.html");
+  const width = Number.isFinite(Number(windowBounds.width)) ? Math.max(320, Math.round(Number(windowBounds.width))) : 1180;
+  const height = Number.isFinite(Number(windowBounds.height)) ? Math.max(240, Math.round(Number(windowBounds.height))) : 900;
+  const left = Number.isFinite(Number(windowBounds.left)) ? Math.round(Number(windowBounds.left)) : undefined;
+  const top = Number.isFinite(Number(windowBounds.top)) ? Math.round(Number(windowBounds.top)) : undefined;
+
+  await chrome.windows.create({
+    url: targetUrl,
+    type: "popup",
+    width,
+    height,
+    ...(left !== undefined ? { left } : {}),
+    ...(top !== undefined ? { top } : {}),
+    focused: true
+  });
 }
 
 // =============================================================================
@@ -1256,6 +1275,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case "OPEN_LOGIN_POPUP":
       openLoginWindow()
+        .then(() => sendResponse({ ok: true }))
+        .catch((err) => sendResponse({ ok: false, error: err.message }));
+      return true;
+
+    case "OPEN_EXTENSION_WINDOW":
+      openExtensionWindow(message.payload || {})
         .then(() => sendResponse({ ok: true }))
         .catch((err) => sendResponse({ ok: false, error: err.message }));
       return true;

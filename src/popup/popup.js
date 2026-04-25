@@ -114,6 +114,7 @@ const el = {
   btnLast7: document.getElementById("btnLast7"),
   btnThisMonth: document.getElementById("btnThisMonth"),
   supportBtn: document.getElementById("supportBtn"),
+  openWindowBtn: document.getElementById("openWindowBtn"),
   githubBtn: document.getElementById("githubBtn"),
   versionLabel: document.getElementById("versionLabel"),
   supportDialog: document.getElementById("supportDialog"),
@@ -145,7 +146,7 @@ function renderVersion() {
       el.versionLabel.title = version ? `Phiên bản ${version}` : "";
     }
   } catch (e) {
-    // ignore
+    console.error(e);
   }
 }
 
@@ -194,7 +195,7 @@ function bindEvents() {
           return;
         }
       } catch (e) {
-        // ignore
+        console.error(e);
       }
       input.focus();
     };
@@ -232,13 +233,14 @@ function bindEvents() {
 
   // Support (Ủng hộ) dialog handlers
   el.supportBtn?.addEventListener("click", openSupportDialog);
+  el.openWindowBtn?.addEventListener("click", openExtensionWindow);
   el.supportCloseBtn?.addEventListener("click", () => closeSupportDialog());
   el.paypalOpenBtn?.addEventListener("click", async () => {
     const url = "https://paypal.me/lamnhan066";
     try {
       await sendRuntimeMessage({ type: "OPEN_EXTERNAL_URL", payload: { url } });
     } catch (err) {
-      try { window.open(url, "_blank"); } catch (e) { }
+      try { window.open(url, "_blank"); } catch (e) { console.error(e); }
     }
   });
   el.githubBtn?.addEventListener("click", async () => {
@@ -246,7 +248,7 @@ function bindEvents() {
     try {
       await sendRuntimeMessage({ type: "OPEN_EXTERNAL_URL", payload: { url } });
     } catch (err) {
-      try { window.open(url, "_blank"); } catch (e) { }
+      try { window.open(url, "_blank"); } catch (e) { console.error(e); }
     }
   });
   el.supportDialog?.addEventListener("click", (e) => {
@@ -414,6 +416,22 @@ async function openPortal() {
   const response = await sendRuntimeMessage({ type: "OPEN_LOGIN_POPUP" });
   if (!response?.ok) {
     throw new Error(response?.error || "Không thể mở cửa sổ đăng nhập");
+  }
+}
+
+async function openExtensionWindow() {
+  const response = await sendRuntimeMessage({
+    type: "OPEN_EXTENSION_WINDOW",
+    payload: {
+      width: window.outerWidth,
+      height: window.outerHeight,
+      left: window.screenX,
+      top: window.screenY
+    }
+  });
+
+  if (!response?.ok) {
+    throw new Error(response?.error || "Không thể mở cửa sổ mới");
   }
 }
 
@@ -616,7 +634,7 @@ async function exportSelected() {
   try {
     for (const [index, invoice] of selected.entries()) {
       setExportBusy(true, `Đang tải hóa đơn ${index + 1}/${selected.length}...`);
-      const detailInvoice = await loadInvoiceDetail(invoice).catch(() => invoice);
+      const detailInvoice = await loadInvoiceDetail(invoice).catch((err) => { console.error(err); return invoice; });
       detailInvoices.push({ sourceInvoice: invoice, detailInvoice });
     }
   } catch (error) {
@@ -892,9 +910,9 @@ async function loadInvoiceDetail(invoice) {
 
       // Attempt to cache the fetched detail into local DB via background
       try {
-        sendRuntimeMessage({ type: "UPSERT_INVOICE", payload: { invoice: response.data } }).catch(() => { });
+        sendRuntimeMessage({ type: "UPSERT_INVOICE", payload: { invoice: response.data } }).catch((err) => { console.error('UPSERT_INVOICE failed:', err); });
       } catch (e) {
-        // ignore caching errors
+        console.error('UPSERT_INVOICE exception:', e);
       }
 
       return response.data;
@@ -905,12 +923,12 @@ async function loadInvoiceDetail(invoice) {
     renderInvoiceSourceBadge();
 
     try {
-      const cachedResp = await sendRuntimeMessage({ type: "GET_CACHED_INVOICE", payload: { invoice } }).catch(() => null);
+      const cachedResp = await sendRuntimeMessage({ type: "GET_CACHED_INVOICE", payload: { invoice } }).catch((err) => { console.error(err); return null; });
       if (cachedResp?.ok && cachedResp.data) {
         return cachedResp.data;
       }
     } catch (e) {
-      // ignore
+      console.error(e);
     }
 
     return invoice;
@@ -920,12 +938,12 @@ async function loadInvoiceDetail(invoice) {
     renderInvoiceSourceBadge();
 
     try {
-      const cachedResp = await sendRuntimeMessage({ type: "GET_CACHED_INVOICE", payload: { invoice } }).catch(() => null);
+      const cachedResp = await sendRuntimeMessage({ type: "GET_CACHED_INVOICE", payload: { invoice } }).catch((err) => { console.error(err); return null; });
       if (cachedResp?.ok && cachedResp.data) {
         return cachedResp.data;
       }
     } catch (e) {
-      // ignore
+      console.error(e);
     }
 
     return invoice;
@@ -2750,7 +2768,7 @@ async function loadCachedState() {
   setDefaultDateRange();
 
   const [syncResponse, appStateResponse] = await Promise.all([
-    sendRuntimeMessage({ type: "GET_SYNC_STATE" }).catch(() => null),
+    sendRuntimeMessage({ type: "GET_SYNC_STATE" }).catch((err) => { console.error(err); return null; }),
     chrome.storage.local.get(APP_STATE_STORAGE_KEY)
   ]);
 
@@ -2765,7 +2783,7 @@ async function loadCachedState() {
         dateFrom: state.syncState.lastDateFrom,
         dateTo: state.syncState.lastDateTo
       }
-    }).catch(() => null);
+    }).catch((err) => { console.error(err); return null; });
 
     if (cachedResponse?.ok) {
       state.invoices = cachedResponse.data?.invoices || [];

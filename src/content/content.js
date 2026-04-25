@@ -91,7 +91,7 @@ if (window.__HOADON_CONTENT_INJECTED) {
         }
       }
     } catch (error) {
-      // ignore storage access errors
+      console.error('collectStorageSnapshot localStorage error:', error);
     }
 
     try {
@@ -102,7 +102,7 @@ if (window.__HOADON_CONTENT_INJECTED) {
         }
       }
     } catch (error) {
-      // ignore storage access errors
+      console.error('collectStorageSnapshot sessionStorage error:', error);
     }
 
     return snapshot;
