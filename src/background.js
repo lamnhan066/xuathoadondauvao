@@ -353,6 +353,7 @@ async function resolveAuthState() {
         isAuthenticated: false,
         phase: portalFlow?.phase || "unknown",
         portalFlow,
+        portalFlowTrusted: false,
         reason: userFriendlyError(directErr)
       };
     }
@@ -378,6 +379,7 @@ async function resolveAuthState() {
       isAuthenticated: false,
       phase: portalFlow?.phase || "unknown",
       portalFlow,
+      portalFlowTrusted: false,
       reason: userFriendlyError(bridgeErr)
     };
   }
@@ -390,6 +392,7 @@ function buildAuthProbeResult(response, portalFlow, source) {
       phase: "login-required",
       portalFlow,
       status: response.status,
+      portalFlowTrusted: true,
       reason: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn"
     };
   }
@@ -400,6 +403,7 @@ function buildAuthProbeResult(response, portalFlow, source) {
       phase: portalFlow?.phase || "unknown",
       portalFlow,
       status: response?.status,
+      portalFlowTrusted: true,
       reason: `Kiểm tra đăng nhập thất bại (${source} HTTP ${response?.status ?? "?"})`
     };
   }
@@ -412,6 +416,7 @@ function buildAuthProbeResult(response, portalFlow, source) {
         : "authenticated-shell",
     portalFlow,
     status: response.status,
+    portalFlowTrusted: true,
     reason:
       portalFlow?.phase === "invoice-search"
         ? "Đã ở màn hình tra cứu hóa đơn"

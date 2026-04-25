@@ -385,7 +385,11 @@ async function checkAuth() {
       throw new Error(response.error || "Lỗi kiểm tra đăng nhập không xác định");
     }
 
-    renderPortalFlowStatus(response.portalFlow, response.phase);
+    if (response.portalFlowTrusted === false) {
+      setStatus(el.portalFlowStatus, "Không thể đọc trạng thái cổng lúc này.", true);
+    } else {
+      renderPortalFlowStatus(response.portalFlow, response.phase);
+    }
 
     if (response.isAuthenticated) {
       setStatus(
