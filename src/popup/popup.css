@@ -1428,7 +1428,7 @@ tbody tr.active {
   }
 
   .detail-pane {
-    display: none;
+    display: block;
   }
 
   /* Toggle or use modal for detail */
