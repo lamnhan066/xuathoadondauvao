@@ -3,7 +3,7 @@
 // =============================================================================
 
 const PORTAL_BASE_URL = "https://hoadondientu.gdt.gov.vn";
-const QUERY_BASE = `${PORTAL_BASE_URL}:30000`;
+const QUERY_BASE = `${PORTAL_BASE_URL}/api`;
 const PORTAL_SEARCH_URL = `${PORTAL_BASE_URL}/tra-cuu/tra-cuu-hoa-don`;
 const QUERY_PATH = "/query/invoices/purchase";
 const SCO_QUERY_PATH = "/sco-query/invoices/purchase";
