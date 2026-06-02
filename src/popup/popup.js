@@ -1255,7 +1255,7 @@ function findProductMatches(productName, productCatalog) {
     const lowered = normalizedName;
     const fuzzy = (productCatalog?.products || []).filter((p) => {
       const pn = String(p.normalizedName || "");
-      return pn.includes(lowered) || lowered.includes(pn);
+      return pn && lowered.includes(pn);
     });
 
     // Deduplicate fuzzy results (by code + name)
